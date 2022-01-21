@@ -28,7 +28,7 @@ func TestInsertEstimate(t *testing.T) {
 	for i := 0; i < len(counts); i++ {
 		for j := 0; j <= rand.Intn(100000); j++ {
 			e := fmt.Sprintf("e-%d-%d", i, j)
-			sllb.Insert(uint64(i), []byte(e))
+			sllb.InsertValue(uint64(i), []byte(e))
 			counts[i]++
 		}
 	}
@@ -58,7 +58,7 @@ func TestCodec(t *testing.T) {
 	for i := 0; i < len(counts); i++ {
 		for j := 0; j <= rand.Intn(100000); j++ {
 			e := fmt.Sprintf("e-%d-%d", i, j)
-			c1.Insert(uint64(i), []byte(e))
+			c1.InsertValue(uint64(i), []byte(e))
 			counts[i]++
 		}
 	}

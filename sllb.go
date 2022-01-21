@@ -55,19 +55,23 @@ func NewDefault() *Sketch {
 	return sk
 }
 
-func (sk *Sketch) valAndPos(value []byte) (uint8, uint64) {
-	val := metro.Hash64(value, 32)
+func (sk *Sketch) valAndPos(val uint64) (uint8, uint64) {
 	k := 64 - sk.p
 	j := val >> uint(k)
 	R := rho(val<<sk.p, 6)
 	return R, j
 }
 
+func (sk *Sketch) InsertValue(timestamp uint64, value []byte) {
+	val := metro.Hash64(value, 32)
+	sk.Insert(timestamp, val)
+}
+
 /*
 Insert a value with a timestamp to the Sketch.
 */
-func (sk *Sketch) Insert(timestamp uint64, value []byte) {
-	R, j := sk.valAndPos(value)
+func (sk *Sketch) Insert(timestamp uint64, val uint64) {
+	R, j := sk.valAndPos(val)
 	sk.regs[j].insert(tR{timestamp, R})
 	if timestamp > sk.latestTimestamp {
 		sk.latestTimestamp = timestamp
