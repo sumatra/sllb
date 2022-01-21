@@ -1,6 +1,8 @@
 package sllb
 
 import (
+	"bytes"
+	"encoding/gob"
 	"errors"
 	"math"
 
@@ -81,4 +83,62 @@ func (sk *Sketch) Estimate(timestamp uint64) uint64 {
 	ez := zerosSince(sk.regs, timestamp)
 	beta := beta(ez)
 	return uint64(sk.alpha * m * (m - ez) / (beta + sum))
+}
+
+// Encode Sketch into a gob
+func (h *Sketch) GobEncode() ([]byte, error) {
+	buf := bytes.Buffer{}
+	enc := gob.NewEncoder(&buf)
+	if err := enc.Encode(h.window); err != nil {
+		return nil, err
+	}
+	if err := enc.Encode(h.alpha); err != nil {
+		return nil, err
+	}
+	if err := enc.Encode(h.p); err != nil {
+		return nil, err
+	}
+	if err := enc.Encode(h.m); err != nil {
+		return nil, err
+	}
+
+	for i := range h.regs {
+		if err := enc.Encode(h.regs[i].lfpm); err != nil {
+			return nil, err
+		}
+	}
+	if err := enc.Encode(h.latestTimestamp); err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
+// Decode gob into a Sketch structure
+func (h *Sketch) GobDecode(b []byte) error {
+	dec := gob.NewDecoder(bytes.NewBuffer(b))
+	if err := dec.Decode(&h.window); err != nil {
+		return err
+	}
+	if err := dec.Decode(&h.alpha); err != nil {
+		return err
+	}
+	if err := dec.Decode(&h.p); err != nil {
+		return err
+	}
+	if err := dec.Decode(&h.m); err != nil {
+		return err
+	}
+	h.regs = make([]*reg, h.m, h.m)
+	for idx := uint(0); idx < h.m; idx++ {
+		h.regs[idx] = newReg()
+		if err := dec.Decode(&h.regs[idx].lfpm); err != nil {
+			return err
+		}
+	}
+	if err := dec.Decode(&h.latestTimestamp); err != nil {
+		return err
+	}
+
+	return nil
 }

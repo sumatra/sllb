@@ -1,7 +1,7 @@
 package sllb
 
 type tR struct {
-	t uint64 //timestamp
+	T uint64 //timestamp
 	R uint8  //trailing 0s
 }
 
@@ -18,7 +18,7 @@ func newReg() *reg {
 func (r *reg) insert(tr tR) {
 	nlfpm := make([]tR, 0)
 	for _, v := range r.lfpm {
-		if v.t < tr.t && v.R < tr.R {
+		if v.T < tr.T && v.R < tr.R {
 			continue
 		}
 		nlfpm = append(nlfpm, v)
@@ -29,7 +29,7 @@ func (r *reg) insert(tr tR) {
 func (r *reg) get(timestamp uint64) uint8 {
 	var val uint8
 	for _, v := range r.lfpm {
-		if v.t >= timestamp {
+		if v.T >= timestamp {
 			if v.R > val {
 				val = v.R
 			}

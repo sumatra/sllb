@@ -1,9 +1,12 @@
 package sllb
 
 import (
+	"bytes"
+	"encoding/gob"
 	"fmt"
 	"math"
 	"math/rand"
+	"reflect"
 	"testing"
 )
 
@@ -38,4 +41,39 @@ func TestInsertEstimate(t *testing.T) {
 			t.Errorf("%d Expected error <= 5.0%% for %d, got %d", i, exp, est)
 		}
 	}
+}
+
+func TestCodec(t *testing.T) {
+	c1, err := New(0.008)
+	if err != nil {
+		t.Error("Expected no error on NewSlidingHyperLogLog, got", err)
+	}
+
+	c2, err := New(0.008)
+	if err != nil {
+		t.Error("Expected no error on NewSlidingHyperLogLog, got", err)
+	}
+
+	counts := make([]uint64, 100)
+	for i := 0; i < len(counts); i++ {
+		for j := 0; j <= rand.Intn(100000); j++ {
+			e := fmt.Sprintf("e-%d-%d", i, j)
+			c1.Insert(uint64(i), []byte(e))
+			counts[i]++
+		}
+	}
+
+	var buf bytes.Buffer
+	if err := gob.NewEncoder(&buf).Encode(c1); err != nil {
+		t.Error(err)
+	}
+
+	if err := gob.NewDecoder(&buf).Decode(&c2); err != nil {
+		t.Error(err)
+	}
+
+	if !reflect.DeepEqual(c1, c2) {
+		t.Errorf("unmarshaled structure differs")
+	}
+
 }
