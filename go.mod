@@ -1,4 +1,4 @@
-module sllb
+module  github.com/sumatra/sllb
 
 go 1.16
 
